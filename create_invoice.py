@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
 Invoice Generator Script
-Generates PDF invoices matching the Byron invoice format.
+Generates PDF invoices using ReportLab.
 
 Usage:
-    python create_invoice.py --hours 200 --date 2025-12-02
-    python create_invoice.py --csv line_items.csv --date 2025-12-02
-    python create_invoice.py --hours 200 --rate 150 --description "Consulting Services"
+    uv run create_invoice.py --hours 200 --date 2025-12-02
+    uv run create_invoice.py --csv line_items.csv --date 2025-12-02
+    uv run create_invoice.py --hours 200 --rate 150 --description "Consulting Services"
 """
 
 import argparse
 import csv
+import json
+import subprocess
 import tomllib
 from datetime import datetime
 from decimal import Decimal
@@ -32,6 +34,24 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
         return tomllib.load(f)
 
 
+def load_config_from_1password(item_ref: str, account: str | None = None) -> dict[str, Any]:
+    cmd = ["op", "read", item_ref]
+    if account:
+        cmd.extend(["--account", account])
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return tomllib.loads(result.stdout)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to read from 1Password: {e.stderr.strip()}") from e
+    except FileNotFoundError:
+        raise RuntimeError("1Password CLI (op) not found. Install it from https://1password.com/downloads/command-line/")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate PDF invoices")
     parser.add_argument("--hours", type=float, help="Number of hours worked")
@@ -42,6 +62,10 @@ def parse_args():
     parser.add_argument("--csv", type=str, help="CSV file with columns: hours, description, rate")
     parser.add_argument("--output", type=str, help="Output PDF filename (auto-generated if not specified)")
     parser.add_argument("--config", type=str, help="Path to config file (default: config.toml)")
+    parser.add_argument("--op-item", type=str, 
+                        help="1Password secret reference for config (e.g., 'op://vault/item/field')")
+    parser.add_argument("--op-account", type=str,
+                        help="1Password account (e.g., 'my.1password.com')")
     return parser.parse_args()
 
 
@@ -206,8 +230,11 @@ def create_invoice(date_str: str, line_items: list[dict], output_path: str, conf
 def main():
     args = parse_args()
 
-    config_path = Path(args.config) if args.config else None
-    config = load_config(config_path)
+    if args.op_item:
+        config = load_config_from_1password(args.op_item, args.op_account)
+    else:
+        config_path = Path(args.config) if args.config else None
+        config = load_config(config_path)
     invoice_cfg = config["invoice"]
 
     if args.csv:

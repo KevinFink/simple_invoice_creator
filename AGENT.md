@@ -7,7 +7,7 @@ Python CLI tool that generates PDF invoices using ReportLab.
 ## Commands
 
 - **Install dependencies**: `uv sync`
-- **Run**: `python create_invoice.py --hours 100 --date 2025-01-01`
+- **Run**: `uv run create_invoice.py --hours 100 --date 2025-01-01`
 - **Type check**: `uv run mypy create_invoice.py` (if mypy is added)
 
 ## Structure

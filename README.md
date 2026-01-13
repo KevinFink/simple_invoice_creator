@@ -51,6 +51,24 @@ hours,description,rate
 | `--csv` | - | CSV file with line items |
 | `--output` | auto-generated | Output PDF filename |
 | `--config` | config.toml | Path to config file |
+| `--op-item` | - | 1Password secret reference for config |
+| `--op-account` | - | 1Password account (e.g., 'my.1password.com') |
+
+### Using 1Password for configuration
+
+Store your config in 1Password using the utility script:
+
+```bash
+uv run store_config_in_1password.py --vault Private --title invoice-config --account my.1password.com
+```
+
+Then reference it when creating invoices:
+
+```bash
+uv run create_invoice.py --hours 100 --op-item "op://Private/invoice-config/config" --op-account my.1password.com
+```
+
+Requires the [1Password CLI](https://1password.com/downloads/command-line/) (`op`) to be installed and authenticated.
 
 ## Output
 
