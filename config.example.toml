@@ -1,0 +1,30 @@
+# Invoice Configuration
+# Copy this file to config.toml and fill in your details
+
+[sender]
+name = "Your Name"
+address_1 = "123 Main St"
+address_2 = "City, ST 12345"
+email = "you@example.com"
+phone = "555-555-5555"
+
+[client]
+name = "Client Name"
+company = "Client Company"
+address_1 = "456 Client Ave"
+address_2 = "City, ST 67890"
+
+[bank]
+account = "12345678"
+ach_routing = "123456789"
+wire_routing = "987654321"
+
+[invoice]
+# Prefix for invoice numbers (e.g., "INV" produces "INV2025-01-15")
+number_prefix = "INV"
+# Prefix for output filenames (e.g., "Invoice" produces "Invoice_20250115.pdf")
+filename_prefix = "Invoice"
+# Default hourly rate
+default_rate = 100.0
+# Default line item description
+default_description = "Consulting services"
